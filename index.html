@@ -68,6 +68,7 @@
         }
 
         /* --- MEJORA GLOBAL DE SCROLLBARS --- */
+        /* Para navegadores basados en Chromium (Chrome, Edge, Safari, Opera) */
         ::-webkit-scrollbar {
             width: 10px;
             height: 10px;
@@ -78,12 +79,13 @@
         ::-webkit-scrollbar-thumb {
             background: var(--sb-thumb);
             border-radius: 6px;
-            border: 2px solid var(--sb-track);
+            border: 2px solid var(--sb-track); /* Da un efecto de espaciado elegante */
         }
         ::-webkit-scrollbar-thumb:hover {
             background: var(--sb-thumb-hover);
         }
 
+        /* Para Firefox */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -161,7 +163,7 @@
         
         .custom-options {
             position: absolute; top: calc(100% + 4px); right: 0; background-color: var(--bg-panel); border: 1px solid var(--border-color);
-            border-radius: 6px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); list-style: none; padding: 4px 0; margin: 0; width: 180px;
+            border-radius: 6px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); list-style: none; padding: 4px 0; margin: 0; width: 180px; /* Incrementado ligeramente para albergar textos largos cómodamente */
             max-height: 300px; overflow-y: auto; z-index: 1000; display: none;
         }
         .custom-options.show { display: block; }
@@ -225,17 +227,15 @@
         iframe { width: 100%; height: 100%; border: none; background: white; }
         .dragging-active iframe { pointer-events: none !important; }
 
-        /* BUSCADOR Y REEMPLAZADOR REDISEÑADO */
         .search-box {
-            position: absolute; top: 50px; right: 20px; background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 600; display: flex; flex-direction: column; gap: 8px; width: 320px; opacity: 0; pointer-events: none; transform: translateY(-10px); transition: all 0.2s ease;
+            position: absolute; top: 50px; right: 20px; background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 600; display: flex; flex-direction: column; gap: 6px; width: 280px; opacity: 0; pointer-events: none; transform: translateY(-10px); transition: all 0.2s ease;
         }
         .search-box.active { opacity: 1; pointer-events: auto; transform: translateY(0); }
-        .search-row { display: flex; gap: 6px; width: 100%; align-items: center; }
+        .search-row { display: flex; gap: 4px; width: 100%; }
         .search-row input { flex: 1; background: var(--bg-main); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 4px; color: var(--text-main); font-size: 13px; outline: none; }
         .search-row input:focus { border-color: var(--primary-color); }
-        .search-box button { height: 30px; padding: 0 10px; font-size: 12px; }
-        .search-info { font-size: 11px; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; }
+        .search-box button { height: 28px; padding: 0 8px; font-size: 11px; }
 
         .status-bar { height: 26px; background-color: var(--bg-toolbar); border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; padding: 0 16px; font-size: 11px; color: var(--text-muted); user-select: none; }
         .status-bar-segment { display: flex; gap: 14px; align-items: center; }
@@ -262,6 +262,7 @@
         .inline-panel-btn.btn-danger-hover:hover { color: var(--danger-color); }
 
         @media (max-width: 900px) {
+            /* SE LIMITA EL DISPLAY NONE: Solo se ocultan los textos de botones directos del header, no los selectores */
             header > .btn-group button span, 
             header > button span { 
                 display: none; 
@@ -269,6 +270,7 @@
             #auto-text { display: none; }
             #theme-text { display: none; }
             
+            /* CORRECCIÓN INTERFAZ MÓVIL: Se fuerza la visibilidad tanto del trigger como de la lista de opciones */
             .select-trigger .opt-text,
             .custom-options .opt-text { 
                 display: inline-block !important; 
@@ -294,6 +296,7 @@
     </style>
 </head>
 <body>
+    <!-- CORRECCIÓN DE RECARGA (ANTI-FLICKER): Verifica el tema de forma síncrona antes de pintar el DOM -->
     <script>
         (function () {
             const savedTheme = localStorage.getItem('ide_theme');
@@ -471,26 +474,17 @@
                 </div>
             </div>
             
-            <!-- BUSCADOR CON MODALIDAD DOBLE -->
             <div id="search-box" class="search-box">
-                <div class="search-info">
-                    <span>1. BÚSQUEDA Y MARCADO</span>
-                    <span id="search-count-label">0/0</span>
+                <div class="search-row">
+                    <input type="text" id="search-input" placeholder="Buscar término..." onkeydown="if(event.key==='Enter') findNext()">
                 </div>
                 <div class="search-row">
-                    <input type="text" id="search-input" placeholder="Buscar texto..." onkeydown="if(event.key==='Enter') findNext()">
-                    <button class="btn-primary" onclick="findNext()" data-translate="search_find">Buscar</button>
+                    <input type="text" id="replace-input" placeholder="Reemplazar con...">
                 </div>
-                
-                <div class="search-info" style="margin-top: 4px;">
-                    <span>2. REEMPLAZO (OPCIONAL)</span>
-                </div>
-                <div class="search-row">
-                    <input type="text" id="replace-input" placeholder="Nuevo texto...">
-                </div>
-                <div class="search-row">
-                    <button onclick="replaceCurrent()" style="flex:1;" data-translate="search_replace">Reemplazar Este</button>
-                    <button onclick="replaceAllMatches()" style="flex:1;" data-translate="search_all">Reemplazar Todo</button>
+                <div class="search-row" style="margin-top: 2px;">
+                    <button class="btn-primary" onclick="findNext()" style="flex:1;" data-translate="search_next">Siguiente</button>
+                    <button onclick="replaceCurrent()" data-translate="search_replace">Cambiar</button>
+                    <button onclick="replaceAllMatches()" data-translate="search_all">Todo</button>
                 </div>
             </div>
 
@@ -557,16 +551,82 @@
     </div>
 
     <script>
+        /* BASE DE DATOS DE IDIOMAS EXPANDIDA CON TITLES Y COMPONENTES DE INTERFAZ */
         const translations = {
             es: { 
-                btn_run: "Ejecutar", btn_auto: "Auto", btn_desktop: "Escritorio", btn_tablet: "Tablet", btn_mobile: "Móvil", theme_dark: "Noche", theme_light: "Día", panel_source: "Código Fuente", badge_saved: "GUARDADO", badge_modifying: "MODIFICANDO...", search_find: "Buscar", search_next: "Siguiente", search_replace: "Reemplazar", search_all: "Todo", panel_preview: "Simulador de Entorno", sb_ready: "Estudio Listo", chars: "caracteres", lines: "Líneas", sb_tab_size: "Tamaño Tabulación",
+                btn_run: "Ejecutar", btn_auto: "Auto", btn_desktop: "Escritorio", btn_tablet: "Tablet", btn_mobile: "Móvil", theme_dark: "Noche", theme_light: "Día", panel_source: "Código Fuente", badge_saved: "GUARDADO", badge_modifying: "MODIFICANDO...", search_next: "Siguiente", search_replace: "Cambiar", search_all: "Todo", panel_preview: "Simulador de Entorno", sb_ready: "Estudio Listo", chars: "caracteres", lines: "Líneas", sb_tab_size: "Tamaño Tabulación",
                 ttl_run: "Ejecutar Código (Ctrl + Enter)", ttl_auto: "Renderizado Automático", ttl_undo: "Deshacer (Ctrl + Z)", ttl_redo: "Rehacer (Ctrl + Y)", ttl_desktop: "Vista Escritorio", ttl_tablet: "Vista Tablet", ttl_mobile: "Vista Móvil", ttl_rotate: "Rotar Pantalla (Modo Apaisado)", ttl_theme: "Cambiar Tema Visual", ttl_format: "Formatear Estructura HTML", ttl_search: "Buscar y Reemplazar (Ctrl + F)", ttl_copy: "Copiar al Portapapeles", ttl_reset: "Restaurar Código de Ejemplo", ttl_import: "Importar Archivo .html", ttl_export: "Exportar Documento HTML", ttl_clear: "Vaciar Editor", ttl_tab: "Abrir en Pestaña Nueva", ttl_fullscreen: "Pantalla Completa Simulador",
-                toast_run: "Código ejecutado manualmente.", toast_save: "Progreso guardado localmente.", toast_undo: "Deshecho", toast_redo: "Rehecho", toast_copied: "Código copiado.", toast_export: "Documento exportado.", toast_import: "Archivo importado.", toast_format: "Estructura alineada.", toast_format_err: "Fallo al formatear.", toast_clear: "Editor despejado.", toast_reset: "Ejemplo responsivo cargado.", confirm_title: "¿Confirmar Acción?", confirm_clear_msg: "¿Quieres vaciar completamente el editor de código?", confirm_reset_msg: "¿Quieres restaurar el código de ejemplo original?", confirm_yes: "Aceptar", confirm_no: "Cancelar", view_fluida: "Escritorio Fluido", search_not_found: "Término no encontrado." 
+                toast_run: "Código ejecutado manualmente.", toast_save: "Progreso guardado localmente.", toast_undo: "Deshecho", toast_redo: "Rehecho", toast_copied: "Código copiado.", toast_export: "Documento exportado.", toast_import: "Archivo importado.", toast_format: "Estructura alineada.", toast_format_err: "Fallo al formatear.", toast_clear: "Editor despejado.", toast_reset: "Ejemplo responsivo cargado.", confirm_title: "¿Confirmar Acción?", confirm_clear_msg: "¿Quieres vaciar completamente el editor de código?", confirm_reset_msg: "¿Quieres restaurar el código de ejemplo original?", confirm_yes: "Aceptar", confirm_no: "Cancelar", view_fluida: "Escritorio Fluido" 
             },
             en: { 
-                btn_run: "Run", btn_auto: "Auto", btn_desktop: "Desktop", btn_tablet: "Tablet", btn_mobile: "Mobile", theme_dark: "Night", theme_light: "Day", panel_source: "Source Code", badge_saved: "SAVED", badge_modifying: "TYPING...", search_find: "Search", search_next: "Next", search_replace: "Replace", search_all: "All", panel_preview: "Environment Simulator", sb_ready: "Studio Ready", chars: "characters", lines: "Lines", sb_tab_size: "Tab Size",
+                btn_run: "Run", btn_auto: "Auto", btn_desktop: "Desktop", btn_tablet: "Tablet", btn_mobile: "Mobile", theme_dark: "Night", theme_light: "Day", panel_source: "Source Code", badge_saved: "SAVED", badge_modifying: "TYPING...", search_next: "Next", search_replace: "Replace", search_all: "All", panel_preview: "Environment Simulator", sb_ready: "Studio Ready", chars: "characters", lines: "Lines", sb_tab_size: "Tab Size",
                 ttl_run: "Run Code (Ctrl + Enter)", ttl_auto: "Automatic Rendering", ttl_undo: "Undo (Ctrl + Z)", ttl_redo: "Redo (Ctrl + Y)", ttl_desktop: "Desktop View", ttl_tablet: "Tablet View", ttl_mobile: "Mobile View", ttl_rotate: "Rotate Screen (Landscape Mode)", ttl_theme: "Switch Interface Theme", ttl_format: "Beautify HTML Structure", ttl_search: "Find and Replace (Ctrl + F)", ttl_copy: "Copy to Clipboard", ttl_reset: "Reset to Default Template", ttl_import: "Import .html File", ttl_export: "Export HTML Document", ttl_clear: "Clear Editor", ttl_tab: "Open in New Tab", ttl_fullscreen: "Toggle Fullscreen Simulator",
-                toast_run: "Code executed manually.", toast_save: "Progress saved locally.", toast_undo: "Undone", toast_redo: "Redone", toast_copied: "Code copied.", toast_export: "Document exported.", toast_import: "File imported.", toast_format: "Structure aligned.", toast_format_err: "Formatting failed.", toast_clear: "Editor cleared.", toast_reset: "Responsive template loaded.", confirm_title: "Confirm Action?", confirm_clear_msg: "Do you want to completely clear the code editor?", confirm_reset_msg: "Do you want to restore the original example code?", confirm_yes: "Accept", confirm_no: "Cancel", view_fluida: "Fluid Desktop", search_not_found: "Term not found." 
+                toast_run: "Code executed manually.", toast_save: "Progress saved locally.", toast_undo: "Undone", toast_redo: "Redone", toast_copied: "Code copied.", toast_export: "Document exported.", toast_import: "File imported.", toast_format: "Structure aligned.", toast_format_err: "Formatting failed.", toast_clear: "Editor cleared.", toast_reset: "Responsive template loaded.", confirm_title: "Confirm Action?", confirm_clear_msg: "Do you want to completely clear the code editor?", confirm_reset_msg: "Do you want to restore the original example code?", confirm_yes: "Accept", confirm_no: "Cancel", view_fluida: "Fluid Desktop" 
+            },
+            ca: { 
+                btn_run: "Executar", btn_auto: "Auto", btn_desktop: "Escriptori", btn_tablet: "Tauleta", btn_mobile: "Mòbil", theme_dark: "Nit", theme_light: "Dia", panel_source: "Codi Font", badge_saved: "DESAT", badge_modifying: "MODIFICANT...", search_next: "Següent", search_replace: "Canviar", search_all: "Tot", panel_preview: "Simulador d'Entorn", sb_ready: "Estudi Llest", chars: "caràcters", lines: "Línies", sb_tab_size: "Mida Tabulació",
+                ttl_run: "Executar Codi (Ctrl + Enter)", ttl_auto: "Renderitzat Automàtic", ttl_undo: "Desfer (Ctrl + Z)", ttl_redo: "Refer (Ctrl + Y)", ttl_desktop: "Vista Escriptori", ttl_tablet: "Vista Tauleta", ttl_mobile: "Vista Mòbil", ttl_rotate: "Girari Pantalla (Mode Apaïsat)", ttl_theme: "Canviar Tema Visual", ttl_format: "Formatar Estructura HTML", ttl_search: "Cercar i Reemplaçar (Ctrl + F)", ttl_copy: "Copiar al Portapapers", ttl_reset: "Restaurar Codi d'Exemple", ttl_import: "Importar Arxiu .html", ttl_export: "Exportar Document HTML", ttl_clear: "Buidar Editor", ttl_tab: "Obrir en una Pestanya Nova", ttl_fullscreen: "Pantalla Completa Simulador",
+                toast_run: "Codi executat manualment.", toast_save: "Progrés desat localment.", toast_undo: "Desfet", toast_redo: "Refet", toast_copied: "Codi copiat.", toast_export: "Document exportat.", toast_import: "Arxiu importat.", toast_format: "Estructura alineada.", toast_format_err: "Error en formatejar.", toast_clear: "Editor buidat.", toast_reset: "Exemple d'estructura carregat.", confirm_title: "Confirmar Acció?", confirm_clear_msg: "Vols buidar completament l'editor de codi?", confirm_reset_msg: "Vols restaurar el codi d'exemple original?", confirm_yes: "Acceptar", confirm_no: "Cancel·lar", view_fluida: "Escriptori Fluid" 
+            },
+            va: { 
+                btn_run: "Executar", btn_auto: "Auto", btn_desktop: "Escriptori", btn_tablet: "Tauleta", btn_mobile: "Mòbil", theme_dark: "Nit", theme_light: "Dia", panel_source: "Codi Font", badge_saved: "DESAT", badge_modifying: "MODIFICANT...", search_next: "Següent", search_replace: "Canviar", search_all: "Tot", panel_preview: "Simulador d'Entorn", sb_ready: "Estudi Llest", chars: "caràcters", lines: "Línies", sb_tab_size: "Mida Tabulació",
+                ttl_run: "Executar Codi (Ctrl + Enter)", ttl_auto: "Renderitzat Automàtic", ttl_undo: "Desfer (Ctrl + Z)", ttl_redo: "Refer (Ctrl + Y)", ttl_desktop: "Vista Escriptori", ttl_tablet: "Vista Tauleta", ttl_mobile: "Vista Mòbil", ttl_rotate: "Girar Pantalla (Mode Apaïsat)", ttl_theme: "Canviar Tema Visual", ttl_format: "Formatar Estructura HTML", ttl_search: "Cercar i Reemplaçar (Ctrl + F)", ttl_copy: "Copiar al Portapapers", ttl_reset: "Restaurar Codi d'Exemple", ttl_import: "Importar Arxiu .html", ttl_export: "Exportar Document HTML", ttl_clear: "Buidar Editor", ttl_tab: "Obrir en una Pestanya Nova", ttl_fullscreen: "Pantalla Completa Simulador",
+                toast_run: "Codi executat manualment.", toast_save: "Progrés desat localment.", toast_undo: "Desfet", toast_redo: "Refet", toast_copied: "Codi copiat.", toast_export: "Document exportat.", toast_import: "Arxiu importat.", toast_format: "Estructura alineada.", toast_format_err: "Error en formatejar.", toast_clear: "Editor buidat.", toast_reset: "Exemple d'estructura carregat.", confirm_title: "Confirmar Acció?", confirm_clear_msg: "Vols buidar completament l'editor de codi?", confirm_reset_msg: "Vols restaurar el codi d'exemple original?", confirm_yes: "Acceptar", confirm_no: "Cancel·lar", view_fluida: "Escriptori Fluid" 
+            },
+            gl: { 
+                btn_run: "Executar", btn_auto: "Auto", btn_desktop: "Escritorio", btn_tablet: "Tableta", btn_mobile: "Móbil", theme_dark: "Noite", theme_light: "Día", panel_source: "Código Fonte", badge_saved: "Gardado", badge_modifying: "Modificando...", search_next: "Seguinte", search_replace: "Cambiar", search_all: "Todo", panel_preview: "Simulador de Contorno", sb_ready: "Estudio Listo", chars: "caracteres", lines: "Liñas", sb_tab_size: "Tamaño Tabulación",
+                ttl_run: "Executar Código (Ctrl + Enter)", ttl_auto: "Renderizado Automático", ttl_undo: "Desfacer (Ctrl + Z)", ttl_redo: "Refacer (Ctrl + Y)", ttl_desktop: "Vista Escritorio", ttl_tablet: "Vista Tableta", ttl_mobile: "Vista Móbil", ttl_rotate: "Rotar Pantalla (Modo Apaisado)", ttl_theme: "Cambiar Tema Visual", ttl_format: "Formatar Estrutura HTML", ttl_search: "Buscar e Reemplazar (Ctrl + F)", ttl_copy: "Copiar ao Portapapeis", ttl_reset: "Restaurar Código de Exemplo", ttl_import: "Importar Ficheiro .html", ttl_export: "Exportar Documento HTML", ttl_clear: "Baleirar Editor", ttl_tab: "Abrir en Nova Pestana", ttl_fullscreen: "Pantalla Completa Simulador",
+                toast_run: "Código executao manualmente.", toast_save: "Progreso gardado localmente.", toast_undo: "Desfeito", toast_redo: "Refeito", toast_copied: "Código copiado.", toast_export: "Documento exportado.", toast_import: "Arquivo importado.", toast_format: "Estrutura aliñada.", toast_format_err: "Fallo ao formatar.", toast_clear: "Editor baleirado.", toast_reset: "Exemplo cargado.", confirm_title: "Confirmar Acción?", confirm_clear_msg: "Queres baleirar completamente o editor?", confirm_reset_msg: "Queres restaurar o exemplo orixinal?", confirm_yes: "Aceptar", confirm_no: "Cancelar", view_fluida: "Escritorio Fluído" 
+            },
+            eu: { 
+                btn_run: "Exekutatu", btn_auto: "Auto", btn_desktop: "Idazmahaia", btn_tablet: "Tableta", btn_mobile: "Mugikorra", theme_dark: "Gaua", theme_light: "Eguna", panel_source: "Iturburu-kodea", badge_saved: "GORDETA", badge_modifying: "ALDATZEN...", search_next: "Hurrengoa", search_replace: "Ordezkatu", search_all: "Denak", panel_preview: "Ingurune Simulagailua", sb_ready: "Estudioa Prest", chars: "karaktere", lines: "Lerroak", sb_tab_size: "Tabulazio Tamaina",
+                ttl_run: "Kodea Exekutatu (Ctrl + Enter)", ttl_auto: "Renderatze Automatikoa", ttl_undo: "Desegin (Ctrl + Z)", ttl_redo: "Berregin (Ctrl + Y)", ttl_desktop: "Idazmahai Bista", ttl_tablet: "Tableta Bista", ttl_mobile: "Mugikor Bista", ttl_rotate: "Pantaila Biratu (Formatu Horizontala)", ttl_theme: "Aldatu Itxura Gaia", ttl_format: "HTML Egitura Txukundu", ttl_search: "Bilatu eta Ordezkatu (Ctrl + F)", ttl_copy: "Kopiatu Arbelean", ttl_reset: "Leheneratu Adibide Kodea", ttl_import: "Inportatu .html Fitxategia", ttl_export: "Esportatu HTML Dokumentua", ttl_clear: "Garbitu Editorea", ttl_tab: "Ireki Fitxa Berrian", ttl_fullscreen: "Pantaila Osoa Simulagailua",
+                toast_run: "Kodea eskuz exekutatu da.", toast_save: "Garapena lokalean gordeta.", toast_undo: "Desegina", toast_redo: "Berregina", toast_copied: "Kodea kopiatuta.", toast_export: "Dokumentua esportatuta.", toast_import: "Fitxategia inportatuta.", toast_format: "Egitura lerrokatuta.", toast_format_err: "Formateatzeak huts egin du.", toast_clear: "Editorea garbituta.", toast_reset: "Adibidea kargatuta.", confirm_title: "Ekintza Berretsi?", confirm_clear_msg: "Editorea guztiz garbitu nahi duzu?", confirm_reset_msg: "Jatorrizko adibidea leheneratu nahi duzu?", confirm_yes: "Onartu", confirm_no: "Utzi", view_fluida: "Idazmahai Fluidoa" 
+            },
+            ast: { 
+                btn_run: "Executar", btn_auto: "Auto", btn_desktop: "Escritoriu", btn_tablet: "Tableta", btn_mobile: "Móvil", theme_dark: "Nueche", theme_light: "Día", panel_source: "Códigu Fonte", badge_saved: "GUARDÁU", badge_modifying: "CAMBIANDO...", search_next: "Siguiente", search_replace: "Camudar", search_all: "Too", panel_preview: "Simulador d'Entornu", sb_ready: "Estudiu Llistu", chars: "caracteres", lines: "Llinies", sb_tab_size: "Tamañu Tabulación",
+                ttl_run: "Executar Códigu (Ctrl + Enter)", ttl_auto: "Renderizáu Automáticu", ttl_undo: "Desfaer (Ctrl + Z)", ttl_redo: "Refaer (Ctrl + Y)", ttl_desktop: "Vista Escritoriu", ttl_tablet: "Vista Tableta", ttl_mobile: "Vista Móvil", ttl_rotate: "Xirar Pantalla (Mou Apaisáu)", ttl_theme: "Camudar Tema Visual", ttl_format: "Formatiar Estructura HTML", ttl_search: "Buscar y Camudar (Ctrl + F)", ttl_copy: "Copiar al Portapapeles", ttl_reset: "Restaurar Códigu d'Exemplu", ttl_import: "Importar Archivu .html", ttl_export: "Esportar Documentu HTML", ttl_clear: "Balerar Editor", ttl_tab: "Abrir en Pestaña Nueva", ttl_fullscreen: "Pantalla Completa Simulador",
+                toast_run: "Códigu executáu manualmente.", toast_save: "Progresu guardáu llocalmente.", toast_undo: "Desfecho", toast_redo: "Refecho", toast_copied: "Códigu copiáu.", toast_export: "Documentu esportáu.", toast_import: "Archivu importáu.", toast_format: "Estructura alliniada.", toast_format_err: "Fallu al formatear.", toast_clear: "Editor llimpiáu.", toast_reset: "Exemplu cargáu.", confirm_title: "¿Confirmar Aición?", confirm_clear_msg: "¿Quies balerar ensembre l'editor de códigu?", confirm_reset_msg: "¿Quies restaurar el códigu d'exemplu orixinal?", confirm_yes: "Aceptar", confirm_no: "Atayar", view_fluida: "Escritoriu Fluyíu" 
+            },
+            an: { 
+                btn_run: "Executar", btn_auto: "Auto", btn_desktop: "Escritorio", btn_tablet: "Tableta", btn_mobile: "Móbil", theme_dark: "Nueit", theme_light: "Día", panel_source: "Codigo Fuent", badge_saved: "ALZAU", badge_modifying: "REMANANDO...", search_next: "Siguient", search_replace: "Cambear", search_all: "Tot", panel_preview: "Simulador de Redolada", sb_ready: "Estudio Listo", chars: "caracters", lines: "LÍnias", sb_tab_size: "Grandaria Tabulación",
+                ttl_run: "Executar Codigo (Ctrl + Enter)", ttl_auto: "Renderizau Automatco", ttl_undo: "Desfer (Ctrl + Z)", ttl_redo: "Refer (Ctrl + Y)", ttl_desktop: "Vista Escritorio", ttl_tablet: "Vista Tableta", ttl_mobile: "Vista Móbil", ttl_rotate: "Xirar Pantalla (Modo Apaisau)", ttl_theme: "Cambear Tema Visual", ttl_format: "Formatiar Estructura HTML", ttl_search: "Buscar y Cambear (Ctrl + F)", ttl_copy: "Copiar a o Portapapeles", ttl_reset: "Restaurar Codigo d'Eixemplo", ttl_import: "Importar Archivo .html", ttl_export: "Exportar Documento HTML", ttl_clear: "Vuixar Editor", ttl_tab: "Abrir en Nueva Pestanya", ttl_fullscreen: "Pantalla Completa Simulador",
+                toast_run: "Codigo executau manualment.", toast_save: "Progreso alzau localment.", toast_undo: "Desfeito", toast_redo: "Refeito", toast_copied: "Codigo copiau.", toast_export: "Documento exportau.", toast_import: "Archivo importau.", toast_format: "Estructura aliniada.", toast_format_err: "Fallo en o formato.", toast_clear: "Editor vuixau.", toast_reset: "Eixemplo cargau.", confirm_title: "¿Confirmar Acción?", confirm_clear_msg: "¿Quiers vuixar de tot l'editor de codigo?", confirm_reset_msg: "¿Quiers restaurar o codigo d'eixemplo orichinal?", confirm_yes: "Aceptar", confirm_no: "Cancelar", view_fluida: "Escritorio Fluido" 
+            },
+            fr: { 
+                btn_run: "Exécuter", btn_auto: "Auto", btn_desktop: "Bureau", btn_tablet: "Tablette", btn_mobile: "Mobile", theme_dark: "Nuit", theme_light: "Jour", panel_source: "Code Source", badge_saved: "ENREGISTRÉ", badge_modifying: "MODIFICATION...", search_next: "Suivant", search_replace: "Remplacer", search_all: "Tout", panel_preview: "Simulateur d'Environnement", sb_ready: "Studio Prêt", chars: "caractères", lines: "Lignes", sb_tab_size: "Taille Tabulation",
+                ttl_run: "Exécuter le code (Ctrl + Enter)", ttl_auto: "Rendu Automatique", ttl_undo: "Annuler (Ctrl + Z)", ttl_redo: "Rétablir (Ctrl + Y)", ttl_desktop: "Affichage Bureau", ttl_tablet: "Affichage Tablette", ttl_mobile: "Affichage Mobile", ttl_rotate: "Pivoter l'écran (Mode Paysage)", ttl_theme: "Changer le Thème d'Interface", ttl_format: "Formater la Structure HTML", ttl_search: "Rechercher et Remplacer (Ctrl + F)", ttl_copy: "Copier dans le Presse-papiers", ttl_reset: "Restaurer le Code d'Exemple", ttl_import: "Importer un Fichier .html", ttl_export: "Exporter le Document HTML", ttl_clear: "Vider l'Éditeur", ttl_tab: "Ouvrir dans un Nouvel Onglet", ttl_fullscreen: "Simulateur Plein Écran",
+                toast_run: "Code exécuté manuellement.", toast_save: "Progression enregistrée localement.", toast_undo: "Annulé", toast_redo: "Rétabli", toast_copied: "Code copié.", toast_export: "Document exporté.", toast_import: "Fichier importé.", toast_format: "Structure alignée.", toast_format_err: "Échec du formatage.", toast_clear: "Éditeur vidé.", toast_reset: "Modèle chargé.", confirm_title: "Confirmer l'action ?", confirm_clear_msg: "Voulez-vous vider complètement l'éditeur ?", confirm_reset_msg: "Voulez-vous restaurer le code d'exemple original ?", confirm_yes: "Accepter", confirm_no: "Annuler", view_fluida: "Bureau Fluide" 
+            },
+            de: { 
+                btn_run: "Ausführen", btn_auto: "Auto", btn_desktop: "Desktop", btn_tablet: "Tablet", btn_mobile: "Mobil", theme_dark: "Nacht", theme_light: "Tag", panel_source: "Quellcode", badge_saved: "GESPEICHERT", badge_modifying: "ÄNDERUNG...", search_next: "Weiter", search_replace: "Ersetzen", search_all: "Alle", panel_preview: "Umgebungssimulator", sb_ready: "Studio Bereit", chars: "Zeichen", lines: "Zeilen", sb_tab_size: "Tabulatorgröße",
+                ttl_run: "Code ausführen (Ctrl + Enter)", ttl_auto: "Automatisches Rendern", ttl_undo: "Rückgängig (Ctrl + Z)", ttl_redo: "Wiederholen (Ctrl + Y)", ttl_desktop: "Desktop-Ansicht", ttl_tablet: "Tablet-Ansicht", ttl_mobile: "Mobil-Ansicht", ttl_rotate: "Bildschirm drehen (Querformat)", ttl_theme: "Oberflächen-Theme wechseln", ttl_format: "HTML-Struktur formatieren", ttl_search: "Suchen und Ersetzen (Ctrl + F)", ttl_copy: "In Zwischenablage kopieren", ttl_reset: "Beispielcode wiederherstellen", ttl_import: "HTML-Datei importieren", ttl_export: "HTML-Dokument exportieren", ttl_clear: "Editor leeren", ttl_tab: "In neuem Tab öffnen", ttl_fullscreen: "Simulator Vollbild",
+                toast_run: "Code manuell ausgeführt.", toast_save: "Fortschritt lokal gespeichert.", toast_undo: "Rückgängig", toast_redo: "Wiederholen", toast_copied: "Code kopiert.", toast_export: "Dokument exportiert.", toast_import: "Datei importiert.", toast_format: "Struktur ausgerichtet.", toast_format_err: "Formatierung fehlgeschlagen.", toast_clear: "Editor geleert.", toast_reset: "Vorlage geladen.", confirm_title: "Aktion bestätigen?", confirm_clear_msg: "Möchten Sie den Editor vollständig leeren?", confirm_reset_msg: "Möchten Sie den ursprünglichen Beispielcode wiederherstellen?", confirm_yes: "Akzeptieren", confirm_no: "Abbrechen", view_fluida: "Flüssiger Desktop" 
+            },
+            it: { 
+                btn_run: "Esegui", btn_auto: "Auto", btn_desktop: "Desktop", btn_tablet: "Tablet", btn_mobile: "Mobile", theme_dark: "Notte", theme_light: "Giorno", panel_source: "Codice Sorgente", badge_saved: "SALVATO", badge_modifying: "MODIFICA...", search_next: "Successivo", search_replace: "Sostituisci", search_all: "Tutto", panel_preview: "Simulatore di Ambiente", sb_ready: "Studio Pronto", chars: "caratteri", lines: "Linee", sb_tab_size: "Dimensione Tab",
+                ttl_run: "Esegui Codice (Ctrl + Enter)", ttl_auto: "Rendering Automatico", ttl_undo: "Annulla (Ctrl + Z)", ttl_redo: "Rifai (Ctrl + Y)", ttl_desktop: "Vista Desktop", ttl_tablet: "Vista Tablet", ttl_mobile: "Vista Mobile", ttl_rotate: "Ruota Schermo (Orizzontale)", ttl_theme: "Cambia Tema Interfaccia", ttl_format: "Formatta Struttura HTML", ttl_search: "Cerca e Sostituisci (Ctrl + F)", ttl_copy: "Copia negli Appunti", ttl_reset: "Ripristina Codice d'Esempio", ttl_import: "Importa File .html", ttl_export: "Esporta Documento HTML", ttl_clear: "Svuota Editor", ttl_tab: "Apri in Nuova Scheda", ttl_fullscreen: "Simulatore a Schermo Intero",
+                toast_run: "Codice eseguito manualmente.", toast_save: "Progressi salvati localmente.", toast_undo: "Annulla", toast_redo: "Rifai", toast_copied: "Codice copiato.", toast_export: "Documento esportato.", toast_import: "File importato.", toast_format: "Struttura allineata.", toast_format_err: "Formattazione fallita.", toast_clear: "Editor svuotato.", toast_reset: "Modello caricato.", confirm_title: "Confermare l'azione?", confirm_clear_msg: "Vuoi svuotare completamente l'editor di codice?", confirm_reset_msg: "Vuoi ripristinare il codice di esempio originale?", confirm_yes: "Accetta", confirm_no: "Annulla", view_fluida: "Desktop Fluido" 
+            },
+            pt: { 
+                btn_run: "Executar", btn_auto: "Auto", btn_desktop: "Desktop", btn_tablet: "Tablet", btn_mobile: "Telemóvel", theme_dark: "Noite", theme_light: "Dia", panel_source: "Código Fonte", badge_saved: "SALVO", badge_modifying: "EDITANDO...", search_next: "Seguinte", search_replace: "Substituir", search_all: "Tudo", panel_preview: "Simulador de Ambiente", sb_ready: "Estúdio Pronto", chars: "caracteres", lines: "Linhas", sb_tab_size: "Tamanho Tab",
+                ttl_run: "Executar Código (Ctrl + Enter)", ttl_auto: "Renderização Automática", ttl_undo: "Desfazer (Ctrl + Z)", ttl_redo: "Refazer (Ctrl + Y)", ttl_desktop: "Visualização Desktop", ttl_tablet: "Visualização Tablet", ttl_mobile: "Visualização Móvel", ttl_rotate: "Rotacionar Tela (Modo Paisagem)", ttl_theme: "Mudar Tema Visual", ttl_format: "Formatar Estrutura HTML", ttl_search: "Buscar e Substituir (Ctrl + F)", ttl_copy: "Copiar para Área de Transferência", ttl_reset: "Restaurar Código de Exemplo", ttl_import: "Importar Arquivo .html", ttl_export: "Exportar Documento HTML", ttl_clear: "Limpar Editor", ttl_tab: "Abrir em Nova Aba", ttl_fullscreen: "Simulador em Tela Cheia",
+                toast_run: "Código executado manualmente.", toast_save: "Progresso salvo localmente.", toast_undo: "Desfazer", toast_redo: "Refazer", toast_copied: "Código copiado.", toast_export: "Documento exportado.", toast_import: "Arquivo importado.", toast_format: "Estrutura alinhada.", toast_format_err: "Falha ao formatar.", toast_clear: "Editor limpo.", toast_reset: "Modelo carregado.", confirm_title: "Confirmar Ação?", confirm_clear_msg: "Deseja limpar completamente o editor de código?", confirm_reset_msg: "Deseja restaurar o código de exemplo original?", confirm_yes: "Aceitar", confirm_no: "Cancelar", view_fluida: "Desktop Fluido" 
+            },
+            ru: { 
+                btn_run: "Запуск", btn_auto: "Авто", btn_desktop: "ПК", btn_tablet: "Планшет", btn_mobile: "Мобильный", theme_dark: "Ночь", theme_light: "День", panel_source: "Исходный код", badge_saved: "СОХРАНЕНО", badge_modifying: "ИЗМЕНЕНИЕ...", search_next: "След.", search_replace: "Заменить", search_all: "Все", panel_preview: "Симулятор окружения", sb_ready: "Студия готова", chars: "символов", lines: "Строки", sb_tab_size: "Размер таба",
+                ttl_run: "Запустить код (Ctrl + Enter)", ttl_auto: "Автоматический рендеринг", ttl_undo: "Отменить (Ctrl + Z)", ttl_redo: "Повторить (Ctrl + Y)", ttl_desktop: "Режим десктопа", ttl_tablet: "Режим планшета", ttl_mobile: "Режим мобильного", ttl_rotate: "Повернуть экран (Альбомный режим)", ttl_theme: "Сменить тему интерфейса", ttl_format: "Выровнять HTML структуру", ttl_search: "Найти и заменить (Ctrl + F)", ttl_copy: "Копировать в буфер", ttl_reset: "Сбросить к шаблону", ttl_import: "Импортировать файл .html", ttl_export: "Экспортировать документ HTML", ttl_clear: "Очистить редактор", ttl_tab: "Открыть в новой вкладке", ttl_fullscreen: "Симулятор во весь экран",
+                toast_run: "Код запущен вручную.", toast_save: "Прогресс сохранен локально.", toast_undo: "Отменено", toast_redo: "Повторено", toast_copied: "Код скопирован.", toast_export: "Документ экспортирован.", toast_import: "Файл импортирован.", toast_format: "Структура выровнена.", toast_format_err: "Сбой форматирования.", toast_clear: "Редактор очищен.", toast_reset: "Шаблон загружен.", confirm_title: "Подтвердить действие?", confirm_clear_msg: "Вы хотите полностью очистить редактор кода?", confirm_reset_msg: "Вы хотите восстановить исходный пример кода?", confirm_yes: "ОК", confirm_no: "Отмена", view_fluida: "Гибкий рабочий стол" 
+            },
+            zh: { 
+                btn_run: "运行", btn_auto: "自动", btn_desktop: "电脑", btn_tablet: "平板", btn_mobile: "手机", theme_dark: "夜间", theme_light: "白天", panel_source: "源代码", badge_saved: "已保存", badge_modifying: "正在修改...", search_next: "下一个", search_replace: "替换", search_all: "全部替换", panel_preview: "环境模拟器", sb_ready: "工作台就绪", chars: "个字符", lines: "行数", sb_tab_size: "缩进大小",
+                ttl_run: "执行代码 (Ctrl + Enter)", ttl_auto: "实时自动渲染", ttl_undo: "撤销操作 (Ctrl + Z)", ttl_redo: "重做操作 (Ctrl + Y)", ttl_desktop: "桌面视口预览", ttl_tablet: "平板视口预览", ttl_mobile: "手机视口预览", ttl_rotate: "横屏/竖屏切换", ttl_theme: "切换界面主题", ttl_format: "美化整理HTML结构", ttl_search: "查找与替换 (Ctrl + F)", ttl_copy: "复制代码到剪贴板", ttl_reset: "重置为默认示例代码", ttl_import: "导入本地 .html 文件", ttl_export: "导出为 HTML 文档", ttl_clear: "清空当前代码", ttl_tab: "在新标签页中打开预览", ttl_fullscreen: "全屏模拟器视图",
+                toast_run: "代码手动执行完成。", toast_save: "进度已保存在本地。", toast_undo: "已撤销", toast_redo: "已重做", toast_copied: "代码已复制。", toast_export: "文档已导出。", toast_import: "文件已导入。", toast_format: "排版优化完成。", toast_format_err: "格式化失败。", toast_clear: "编辑器已清空。", toast_reset: "示例模板已重置。", confirm_title: "确认操作吗？", confirm_clear_msg: "您确定要彻底清空代码编辑器吗？", confirm_reset_msg: "您确定要恢复默认的示例代码吗？", confirm_yes: "确定", confirm_no: "取消", view_fluida: "流式桌面" 
+            },
+            ja: { 
+                btn_run: "実行", btn_auto: "自動", btn_desktop: "デスクトップ", btn_tablet: "タブレット", btn_mobile: "モバイル", theme_dark: "夜間", theme_light: "昼間", panel_source: "ソースコード", badge_saved: "保存済み", badge_modifying: "編集変化中...", search_next: "次へ", search_replace: "置換", search_all: "すべて置換", panel_preview: "環境シミュレータ", sb_ready: "スタジオ準備完了", chars: "文字", lines: "行数", sb_tab_size: "タブ幅",
+                ttl_run: "コードを実行 (Ctrl + Enter)", ttl_auto: "自動リアルタイム表示", ttl_undo: "元に戻す (Ctrl + Z)", ttl_redo: "やり直す (Ctrl + Y)", ttl_desktop: "デスクトップ表示", ttl_tablet: "タブレット表示", ttl_mobile: "モバイル表示", ttl_rotate: "画面の向きを回転 (横画面)", ttl_theme: "テーマ色の切り替え", ttl_format: "HTMLコードの自動整形", ttl_search: "検索と置換 (Ctrl + F)", ttl_copy: "クリップボードにコピー", ttl_reset: "初期コードに戻す", ttl_import: ".htmlファイルを読み込む", ttl_export: "HTMLファイルを書き出す", ttl_clear: "エディタを空にする", ttl_tab: "新しいタブでプレビューを開く", ttl_fullscreen: "シミュレータを全画面表示",
+                toast_run: "コードを手動実行しました。", toast_save: "進行状況をローカルに保存しました。", toast_undo: "元に戻す", toast_redo: "やり直し", toast_copied: "コードをコピーしました。", toast_export: "エクスポートしました。", toast_import: "インポートしました。", toast_format: "コードが整列されました。", toast_format_err: "整形に失敗しました。", toast_clear: "エディタをクリアしました。", toast_reset: "サンプルを再読み込みしました。", confirm_title: "アクションを確認しますか？", confirm_clear_msg: "コードエディタを完全にクリアしますか？", confirm_reset_msg: "元のサンプルコードに戻しますか？", confirm_yes: "はい", confirm_no: "いいえ", view_fluida: "流動的画面" 
             }
         };
 
@@ -626,10 +686,12 @@
             new ResizeObserver(() => updatePixelDisplay()).observe(deviceScreen);
         };
 
+        /* TRADUCTOR INTEGRAL (TEXTOS Y COMENTARIOS EMERGENTES 'TITLE') */
         function applyTranslations(lang) {
-            currentLang = translations[lang] ? lang : 'es'; 
+            currentLang = translations[lang] ? lang : 'en'; 
             const dict = translations[currentLang];
 
+            // Traducir nodos textuales internos standard
             document.querySelectorAll('[data-translate]').forEach(el => {
                 const key = el.getAttribute('data-translate');
                 if (dict[key]) {
@@ -642,6 +704,7 @@
                 }
             });
 
+            // Traducir leyendas de botones (Atributo Title de accesibilidad)
             document.querySelectorAll('[data-translate-title]').forEach(el => {
                 const key = el.getAttribute('data-translate-title');
                 if (dict[key]) {
@@ -649,6 +712,7 @@
                 }
             });
 
+            // Recalcular indicadores dinámicos
             const totalLines = editor.value.split('\n').length;
             charCount.textContent = `${editor.value.length} ${dict['chars']}`;
             sbLines.textContent = `${dict['lines']}: ${totalLines}`;
@@ -665,8 +729,13 @@
             const sysLangFull = navigator.language || navigator.userLanguage;
             const sysLang = sysLangFull.split('-')[0].toLowerCase();
             
+            // Buscar si hay un idioma guardado en el localStorage
             let savedLang = localStorage.getItem('ide_lang') || 'system';
-            let targetLang = savedLang === 'system' ? sysLang : savedLang;
+            let targetLang = savedLang;
+
+            if (savedLang === 'system') {
+                targetLang = sysLang;
+            }
 
             trigger.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -694,12 +763,19 @@
                     optionsList.classList.remove('show');
                     container.classList.remove('open');
                     
+                    // Guardar la elección del usuario en localStorage
                     localStorage.setItem('ide_lang', value);
-                    applyTranslations(value === 'system' ? sysLang : value);
+                    
+                    if (value === 'system') {
+                        applyTranslations(sysLang);
+                    } else {
+                        applyTranslations(value);
+                    }
                     showToast(translations[currentLang]['sb_ready']);
                 });
             });
 
+            // Establecer visualmente el elemento seleccionado guardado por defecto
             options.forEach(o => o.classList.remove('selected'));
             const activeOption = document.getElementById(`opt-${savedLang}`) || document.getElementById('opt-system');
             if (activeOption) {
@@ -783,7 +859,7 @@
         }
 
         function onCodeChange(skipHistory = false) {
-            const dict = translations[currentLang] || translations['es'];
+            const dict = translations[currentLang];
             saveStatus.textContent = dict['badge_modifying'];
             saveStatus.style.borderColor = "var(--text-muted)";
             saveStatus.style.color = "var(--text-muted)";
@@ -852,51 +928,24 @@
             }
         }
 
-        /* --- SISTEMA DE BÚSQUEDA Y REEMPLAZO --- */
-        let searchMatches = [];
-        let currentMatchIndex = -1;
         let lastSearchTerm = "";
+        let searchIndex = 0;
 
         function findNext() {
             const term = document.getElementById('search-input').value;
-            const label = document.getElementById('search-count-label');
-            if (!term) {
-                searchMatches = [];
-                currentMatchIndex = -1;
-                label.textContent = "0/0";
-                return;
-            }
-
+            if(!term) return;
             const text = editor.value;
-            
-            if (term !== lastSearchTerm) {
-                lastSearchTerm = term;
-                searchMatches = [];
-                let pos = text.toLowerCase().indexOf(term.toLowerCase());
-                while (pos !== -1) {
-                    searchMatches.push(pos);
-                    pos = text.toLowerCase().indexOf(term.toLowerCase(), pos + 1);
-                }
-                currentMatchIndex = -1;
+            if (term !== lastSearchTerm) { lastSearchTerm = term; searchIndex = 0; }
+            const index = text.toLowerCase().indexOf(term.toLowerCase(), searchIndex);
+            if(index !== -1) {
+                editor.focus();
+                editor.setSelectionRange(index, index + term.length);
+                searchIndex = index + term.length;
+                const lineNum = text.substring(0, index).split('\n').length;
+                editor.scrollTop = (lineNum - 3) * 21;
+            } else {
+                searchIndex = 0;
             }
-
-            if (searchMatches.length === 0) {
-                label.textContent = "0/0";
-                showToast(translations[currentLang]['search_not_found']);
-                return;
-            }
-
-            currentMatchIndex = (currentMatchIndex + 1) % searchMatches.length;
-            const index = searchMatches[currentMatchIndex];
-
-            editor.focus();
-            editor.setSelectionRange(index, index + term.length);
-            
-            const lineNum = text.substring(0, index).split('\n').length;
-            editor.scrollTop = (lineNum - 3) * 21;
-            
-            label.textContent = `${currentMatchIndex + 1}/${searchMatches.length}`;
-            updateActiveLine();
         }
 
         function replaceCurrent() {
@@ -904,16 +953,12 @@
             const replacement = document.getElementById('replace-input').value;
             const start = editor.selectionStart;
             const end = editor.selectionEnd;
-            
-            if (end - start > 0 && editor.value.substring(start, end).toLowerCase() === term.toLowerCase()) {
+            if(end - start > 0 && editor.value.substring(start, end).toLowerCase() === term.toLowerCase()) {
                 saveHistoryState();
                 editor.value = editor.value.substring(0, start) + replacement + editor.value.substring(end);
+                editor.setSelectionRange(start, start + replacement.length);
                 onCodeChange();
-                lastSearchTerm = ""; 
-                findNext();
-            } else { 
-                findNext(); 
-            }
+            } else { findNext(); }
         }
 
         function replaceAllMatches() {
@@ -926,8 +971,6 @@
             if(matches > 0) {
                 editor.value = editor.value.replace(regex, replacement);
                 onCodeChange();
-                lastSearchTerm = "";
-                document.getElementById('search-count-label').textContent = "0/0";
             }
         }
 
@@ -1006,20 +1049,13 @@
 
         function updatePixelDisplay() {
             const width = preview.clientWidth; const height = preview.clientHeight;
-            const dict = translations[currentLang] || translations['es'];
+            const dict = translations[currentLang];
             if(currentDeviceMode === 'desktop') { pixelCounter.textContent = `${dict['view_fluida']}: ${width}px × ${height}px (100%)`;
             } else { pixelCounter.textContent = `${currentDeviceMode.toUpperCase()} | Inspector: ${width}px × ${height}px`; }
         }
 
         function toggleFullscreen() { panelPreview.classList.toggle('fullscreen'); setTimeout(updatePixelDisplay, 200); }
-
-function openInNewTab() {
-    const win = window.open('about:blank', '_blank');
-    
-    win.document.open();
-    win.document.write(editor.value);
-    win.document.close();
-}
+        function openInNewTab() { const blob = new Blob([editor.value], { type: "text/html" }); const blobUrl = URL.createObjectURL(blob); window.open(blobUrl, '_blank'); }
 
         function toggleTheme() {
             const isLight = document.documentElement.classList.toggle('light-theme');
