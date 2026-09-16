@@ -1013,22 +1013,13 @@
 
         function toggleFullscreen() { panelPreview.classList.toggle('fullscreen'); setTimeout(updatePixelDisplay, 200); }
 
-        /* --- SOLUCIÓN VERCEL / HTTPS COMPATIBLE --- */
-        function openInNewTab() {
-            const blob = new Blob([editor.value], { type: 'text/html;charset=utf-8' });
-            const blobUrl = URL.createObjectURL(blob);
-            const win = window.open(blobUrl, '_blank');
-            
-            if (!win) {
-                showToast("Por favor habilita las ventanas emergentes.");
-                return;
-            }
-
-            // Liberar memoria cuando la ventana haya cargado
-            win.onload = () => {
-                URL.revokeObjectURL(blobUrl);
-            };
-        }
+function openInNewTab() {
+    const win = window.open('about:blank', '_blank');
+    
+    win.document.open();
+    win.document.write(editor.value);
+    win.document.close();
+}
 
         function toggleTheme() {
             const isLight = document.documentElement.classList.toggle('light-theme');
